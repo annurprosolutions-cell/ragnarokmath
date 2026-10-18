@@ -34,7 +34,7 @@ export class GameSession {
   readonly input: Input;
   readonly hud: Hud;
   battle: Battle | null = null;
-  private cam = { yaw: 0.6, dist: 17, tx: 0, ty: 0, tz: 0, ox: 0, oy: 0 };
+  private cam = { yaw: 0.6, dist: 15, tx: 0, ty: 0, tz: 0, ox: 0, oy: 0 };
   private rng = new Rng();
   private safeT = 2;
   private saveT = 0;
@@ -74,6 +74,10 @@ export class GameSession {
 
   get char(): CharacterData {
     return this.save.slots[this.slot]!;
+  }
+
+  get cameraYaw(): number {
+    return this.cam.yaw;
   }
 
   isBusy(): boolean {
@@ -379,6 +383,12 @@ export class GameSession {
       fx = (fx + m.x) / 2;
       fz = (fz + m.z) / 2;
       dist = Math.min(dist, 12);
+      // Swing round to a three-quarter side view so both fighters (and the player's face) are visible.
+      const a = Math.atan2(m.x - this.player.x, m.z - this.player.z);
+      const wrap = (v: number) => Math.atan2(Math.sin(v), Math.cos(v));
+      const opts = [a + Math.PI / 2 - 0.4, a - Math.PI / 2 + 0.4];
+      const want = Math.abs(wrap(opts[0] - cam.yaw)) < Math.abs(wrap(opts[1] - cam.yaw)) ? opts[0] : opts[1];
+      cam.yaw += wrap(want - cam.yaw) * (1 - Math.exp(-dt * 3));
       const W = innerWidth, H = innerHeight;
       if (W > H && H < 560) ox = 0.24;
       else oy = W > H ? 0.2 : 0.26;

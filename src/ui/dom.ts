@@ -50,13 +50,22 @@ export function uiRoot(): HTMLElement {
 }
 
 /** Modal window in the RO-style blue title bar look. Returns the body element and a close function. */
-export function openWindow(title: string, opts: { wide?: boolean; onClose?: () => void; closable?: boolean } = {}): { win: HTMLElement; body: HTMLElement; close: () => void } {
-  const backdrop = h('div', { class: 'backdrop' });
+export function openWindow(title: string, opts: { wide?: boolean; side?: boolean; onClose?: () => void; closable?: boolean } = {}): { win: HTMLElement; body: HTMLElement; close: () => void } {
+  const backdrop = h('div', { class: 'backdrop' + (opts.side ? ' side' : '') });
   const body = h('div', { class: 'win-body' });
+  // Escape closes the topmost window before the game sees the key.
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== 'Escape' || opts.closable === false) return;
+    if (backdrop !== [...document.querySelectorAll('.backdrop')].pop()) return;
+    e.stopPropagation();
+    close();
+  };
   const close = () => {
+    removeEventListener('keydown', onKey, true);
     backdrop.remove();
     opts.onClose?.();
   };
+  addEventListener('keydown', onKey, true);
   const head = h('div', { class: 'win-head' }, h('span', { text: title }));
   if (opts.closable !== false) head.append(h('button', { class: 'win-x', text: '✕', attrs: { 'aria-label': 'Tutup' }, onclick: close }));
   const win = h('div', { class: 'win' + (opts.wide ? ' wide' : '') }, head, body);

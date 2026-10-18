@@ -111,8 +111,8 @@ export class CharacterModel {
     const eye = toon(EYE_COLORS[app.eyeColor] ?? EYE_COLORS[0]);
     const white = basic(0xffffff);
     for (const s of [-1, 1]) {
-      put(h, G.sphere(0.055, 12, 10), eye, [s * 0.125, -0.02, 0.31], [0, s * 0.35, 0], [0.85, 1.3, 0.5]);
-      put(h, G.sphere(0.018, 8, 6), white, [s * 0.125 + 0.016, 0.03, 0.345]);
+      put(h, G.sphere(0.068, 12, 10), eye, [s * 0.13, -0.03, 0.305], [0, s * 0.38, 0], [0.82, 1.3, 0.5]);
+      put(h, G.sphere(0.024, 8, 6), white, [s * 0.13 + 0.02, 0.03, 0.345]);
       put(h, G.sphere(0.05, 10, 8), toon(0xf5a3a3, { opacity: 0.55 }), [s * 0.2, -0.11, 0.28], [0, s * 0.6, 0], [1, 0.55, 0.3]);
     }
     put(h, G.torus(0.035, 0.009, PI, 6, 10), toon(0x9b4a4a), [0, -0.13, 0.33], [0, 0, PI]);
@@ -170,7 +170,7 @@ export class CharacterModel {
           const r = Math.sqrt(Math.max(0, 1 - yv * yv));
           const a = i * 2.39996;
           const z = Math.sin(a) * r;
-          if (z > 0.55 && yv < 0.6) continue;
+          if (z > 0.25 && yv < 0.75) continue; // keep the face clear
           put(h, G.sphere(0.11, 10, 8), m, [Math.cos(a) * r * 0.38, yv * 0.38, z * 0.38 - 0.02]);
         }
         break;
@@ -188,8 +188,6 @@ export class CharacterModel {
     const open = hood ? 0.85 : 0.78;
     put(h, G.partSphere(r, 0, PI * 2, 0, 0.95), m, [0, 0.01, 0]);
     put(h, G.partSphere(r, PI / 2 + open, PI * 2 - open * 2, 0.95, 1.8), m, [0, 0.01, 0]);
-    // Rim that frames the face
-    put(h, G.torus(0.3 * scale, 0.035 * scale, PI * 2, 8, 24), toon(darken(color, 0.9)), [0, -0.03, 0.26], [0, 0, 0], [0.95, 1.18, 1]);
     // Drape over shoulders
     const drape = put(this.body, G.cyl(0.2 * scale, 0.37 * scale, 0.34, 18), m, [0, 0.8, 0]);
     drape.scale.z = 0.95;

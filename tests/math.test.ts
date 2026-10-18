@@ -34,3 +34,14 @@ describe('question generators', () => {
     });
   }
 });
+
+describe('choiceValue', () => {
+  it('parses numbers, fractions and mixed numbers', async () => {
+    const { choiceValue, fr, mixed, n } = await import('../src/math');
+    expect(choiceValue(fr(4, 8))).toBe(0.5);
+    expect(choiceValue(mixed(11, 4))).toBe(2.75);
+    expect(choiceValue(n(-12345))).toBe(-12345);
+    expect(choiceValue('x = 3')).toBeNull();
+    expect(choiceValue(`${n(5)} cm`)).toBeNull();
+  });
+});

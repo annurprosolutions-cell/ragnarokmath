@@ -217,9 +217,30 @@ export function numq(
   return { prompt, correct: fmt(ans), wrong, explain };
 }
 
-/** Shuffle a draft into a playable question. */
+/**
+ * Numeric value of a choice that is a plain number, fraction or mixed number
+ * (e.g. "4", "−2.5", 3/8, 2¾). Anything with units or words returns null.
+ */
+export function choiceValue(html: string): number | null {
+  const s = html
+    .replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g, '[$1/$2]')
+    .replace(/[\u00a0\s]/g, '')
+    .replace(/\u2212/g, '-');
+  const m = s.match(/^(-?)(\d+(?:\.\d+)?)?(?:\[(\d+)\/(\d+)\])?$/);
+  if (!m || (!m[2] && !m[3])) return null;
+  const whole = m[2] ? Number(m[2]) : 0;
+  const frac = m[3] ? Number(m[3]) / Number(m[4]) : 0;
+  return (m[1] ? -1 : 1) * (whole + frac);
+}
+
+/** Shuffle a draft into a playable question. Wrong choices equal in value to the answer (4/8 vs 1/2) are dropped. */
 export function finalize(topic: Topic, d: Draft, r: Rng): Question {
-  const uniqueWrong = Array.from(new Set(d.wrong.filter((w) => w !== d.correct))).slice(0, 3);
+  const target = choiceValue(d.correct);
+  const sameValue = (w: string) => {
+    const v = target === null ? null : choiceValue(w);
+    return v !== null && Math.abs(v - target!) < 1e-9;
+  };
+  const uniqueWrong = Array.from(new Set(d.wrong.filter((w) => w !== d.correct && !sameValue(w)))).slice(0, 3);
   const choices = r.shuffle([d.correct, ...uniqueWrong]);
   return {
     topicId: topic.id,

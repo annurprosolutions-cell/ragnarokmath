@@ -24,7 +24,7 @@ export interface BotDef {
 export const TOWN_BOTS: BotDef[] = [
   { name: 'Hafiz', job: 'knight', appearance: app({ gender: 'L', hairStyle: 1, hairColor: 0, skin: 2 }) },
   { name: 'Mei Ling', job: 'mage', appearance: app({ hairStyle: 3, hairColor: 2, skin: 0 }) },
-  { name: 'Aisyah', job: 'assassin', appearance: app({ tudung: true, tudungColor: 6, skin: 1 }) },
+  { name: 'Zara', job: 'assassin', appearance: app({ tudung: true, tudungColor: 6, skin: 1 }) },
   { name: 'Ravi', job: 'hunter', appearance: app({ gender: 'L', hairStyle: 5, hairColor: 2, skin: 4 }) },
   { name: 'Nurul', job: 'novice', appearance: app({ tudung: true, tudungColor: 1, outfitColor: 5, skin: 1 }) },
   { name: 'Adam', job: 'blacksmith', appearance: app({ gender: 'L', hairStyle: 0, hairColor: 3, skin: 3 }) },

@@ -236,8 +236,8 @@ export class World {
       const g = new THREE.Group();
       g.position.set(x, this.heightAt(x, z) + 0.05, z);
       const ring = put(g, G.torus(1.3, 0.1, PI * 2, 8, 40), basic(0x7fe8ff, 1, true), [0, 0.05, 0], [PI / 2, 0, 0]);
-      put(g, new THREE.CircleGeometry(1.25, 32), basic(0x3fb8ff, 0.45, true), [0, 0.04, 0], [-PI / 2, 0, 0]);
-      const colMat = new THREE.MeshBasicMaterial({ map: tex, color: 0x7fe8ff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+      put(g, new THREE.CircleGeometry(1.25, 32), basic(0x3fb8ff, 0.4), [0, 0.04, 0], [-PI / 2, 0, 0]);
+      const colMat = new THREE.MeshBasicMaterial({ map: tex, color: 0x5fd8ff, transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide });
       put(g, G.cyl(1.2, 1.2, 3.2, 24, true), colMat, [0, 1.6, 0]);
       const sparks: THREE.Mesh[] = [];
       for (let i = 0; i < 6; i++) sparks.push(put(g, G.octa(0.08), basic(0xe0fbff, 1, true)));
@@ -294,6 +294,20 @@ export class World {
       }
     };
 
+    // A ring of the theme's signature scenery around the arrival point and portals,
+    // so the first thing a player sees is a framed, lived-in spot.
+    const frame = (batch: Batch, n: number, scale: [number, number], collide: number) => {
+      for (const [cx, cz] of [d.spawn, ...d.portals.map((p) => p.pos)]) {
+        let placed = 0;
+        for (let tries = 0; placed < n && tries < n * 15; tries++) {
+          const a = rng.range(0, PI * 2), r = rng.range(6.5, 11);
+          const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
+          if (onPath(x, z) || Math.abs(x) > s - 2 || Math.abs(z) > s - 2 || this.isWater(x, z) || !this.clearOf(x, z, keep)) continue;
+          this.place(batch, x, z, rng.range(0, PI * 2), rng.range(...scale), collide);
+          placed++;
+        }
+      }
+    };
     const lowQ = this.quality === 'low' ? 0.6 : 1;
     const N = (k: number) => Math.round(k * lowQ);
     const batches: Batch[] = [];
@@ -302,37 +316,42 @@ export class World {
     switch (d.theme) {
       case 'meadow': {
         const trees = add(KITS.roundTree());
-        scatter(trees, N(22), [0.9, 1.3], 0.7);
+        frame(trees, 6, [0.9, 1.3], 0.7);
+        scatter(trees, N(90), [0.9, 1.3], 0.7);
         scatter(trees, N(60), [1, 1.5], 0, { ring: true });
-        scatter(add(KITS.bush()), N(30), [0.7, 1.2], 0.5);
-        scatter(add(KITS.flower()), N(220), [0.8, 1.3], 0, { tints: [0xf28aa0, 0xf2c94c, 0xffffff, 0xa98bd9, 0xff8a5c] });
-        scatter(add(KITS.rock()), N(14), [0.6, 1.1], 0.7);
+        scatter(add(KITS.bush()), N(90), [0.7, 1.2], 0.5);
+        scatter(add(KITS.flower()), N(380), [0.8, 1.3], 0, { tints: [0xf28aa0, 0xf2c94c, 0xffffff, 0xa98bd9, 0xff8a5c] });
+        scatter(add(KITS.rock()), N(26), [0.6, 1.1], 0.7);
         break;
       }
       case 'forest': {
         const pines = add(KITS.pine());
-        scatter(pines, N(45), [0.9, 1.5], 0.6);
+        frame(pines, 7, [0.9, 1.4], 0.6);
+        scatter(pines, N(140), [0.9, 1.5], 0.6);
         scatter(pines, N(90), [1.1, 1.8], 0, { ring: true });
-        scatter(add(KITS.roundTree(0x3f8f45)), N(15), [1, 1.4], 0.7);
+        scatter(add(KITS.roundTree(0x3f8f45)), N(25), [1, 1.4], 0.7);
         scatter(add(KITS.mushroomDeco()), N(25), [0.6, 1.6], 0.3, { tints: [0xe0533c, 0x8e5bd6, 0xf2c94c] });
         scatter(add(KITS.log()), N(10), [0.8, 1.1], 0.8);
-        scatter(add(KITS.bush(0x3f8a3e)), N(40), [0.7, 1.3], 0.4);
+        scatter(add(KITS.bush(0x3f8a3e)), N(70), [0.7, 1.3], 0.4);
         scatter(add(KITS.flower()), N(90), [0.8, 1.2], 0, { tints: [0xf2c94c, 0xffffff, 0xa98bd9] });
         break;
       }
       case 'beach': {
         const palms = add(KITS.palm());
-        scatter(palms, N(22), [0.9, 1.3], 0.5);
+        frame(palms, 5, [0.9, 1.3], 0.5);
+        scatter(palms, N(55), [0.9, 1.3], 0.5);
         scatter(palms, N(40), [1, 1.4], 0, { ring: true });
-        scatter(add(KITS.rock(0xb9a58a)), N(18), [0.6, 1.2], 0.7);
-        scatter(add(KITS.shell()), N(60), [0.8, 1.6], 0, { tints: [0xffffff, 0xf7c6d0, 0xf2d7a8] });
-        scatter(add(KITS.umbrella()), N(5), [1, 1.1], 0.3, { tints: [0xe0533c, 0x2f56a6, 0xf2c94c] });
+        scatter(add(KITS.rock(0xb9a58a)), N(30), [0.6, 1.2], 0.7);
+        scatter(add(KITS.shell()), N(120), [0.8, 1.6], 0, { tints: [0xffffff, 0xf7c6d0, 0xf2d7a8] });
+        scatter(add(KITS.umbrella()), N(8), [1, 1.1], 0.3, { tints: [0xe0533c, 0x2f56a6, 0xf2c94c] });
         break;
       }
       case 'desert': {
-        scatter(add(KITS.cactus()), N(30), [0.8, 1.4], 0.5);
+        const cacti = add(KITS.cactus());
+        frame(cacti, 5, [0.8, 1.3], 0.5);
+        scatter(cacti, N(55), [0.8, 1.4], 0.5);
         const rocks = add(KITS.sandRock());
-        scatter(rocks, N(22), [0.7, 1.5], 1.0);
+        scatter(rocks, N(40), [0.7, 1.5], 1.0);
         scatter(rocks, N(50), [1.5, 3], 0, { ring: true });
         const pyr = add(KITS.pyramid());
         for (const [x, z, sc] of [[-75, -60, 1.2], [-55, -85, 0.8], [70, -70, 1], [80, 60, 0.9]]) pyr.add(x, this.heightAt(x, z) - 1, z, 0, sc);
@@ -349,19 +368,21 @@ export class World {
       }
       case 'cave': {
         const stal = add(KITS.stalagmite());
-        scatter(stal, N(40), [0.6, 1.4], 0.45);
+        frame(stal, 7, [0.7, 1.4], 0.45);
+        scatter(stal, N(75), [0.6, 1.4], 0.45);
         scatter(add(KITS.stalagmite(0x3c3350)), N(120), [1.5, 3.5], 0, { ring: true });
-        for (const col of [0x7ad3e8, 0xd07ae8, 0x7ae8a8]) scatter(add(KITS.crystalDeco(col)), N(14), [0.7, 1.6], 0.5);
-        scatter(add(KITS.rock(0x5a4d70)), N(25), [0.7, 1.4], 0.7);
+        for (const col of [0x7ad3e8, 0xd07ae8, 0x7ae8a8]) scatter(add(KITS.crystalDeco(col)), N(22), [0.7, 1.6], 0.5);
+        scatter(add(KITS.rock(0x5a4d70)), N(40), [0.7, 1.4], 0.7);
         scatter(add(KITS.mushroomDeco()), N(15), [0.5, 1], 0.2, { tints: [0x7ae8d8, 0xb07ae8] });
         break;
       }
       case 'peak': {
         const pines = add(KITS.pine(0x2f6a4a, true));
-        scatter(pines, N(35), [0.9, 1.5], 0.6);
+        frame(pines, 6, [0.9, 1.4], 0.6);
+        scatter(pines, N(65), [0.9, 1.5], 0.6);
         scatter(pines, N(70), [1.1, 1.7], 0, { ring: true });
-        scatter(add(KITS.iceRock()), N(25), [0.7, 1.5], 0.8);
-        scatter(add(KITS.snowman()), 4, [1, 1.2], 0.6);
+        scatter(add(KITS.iceRock()), N(40), [0.7, 1.5], 0.8);
+        scatter(add(KITS.snowman()), 6, [1, 1.2], 0.6);
         this.addSnow();
         break;
       }
